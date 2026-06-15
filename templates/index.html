@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- 上方控制區：議題狀態 + 表單 + 更新按鈕 -->
+<div class="control-panel">
+
+    <!-- 議題狀態 -->
+    <section class="topic-status">
+        {% if topic %}
+        <div class="status-active">
+            <span class="status-dot"></span>
+            <span class="status-label">追蹤中</span>
+        </div>
+        <div class="status-keyword">{{ topic['keyword'] }}</div>
+        <div class="status-meta">
+            <span>最後更新：{{ topic['last_scraped_at'] or '尚未更新' }}</span>
+            <span class="meta-divider">·</span>
+            <span>共 <strong>{{ articles|length }}</strong> 篇報導</span>
+        </div>
+        {% else %}
+        <div class="status-empty">
+            <span class="status-dot inactive"></span>
+            <span class="status-label">尚未設定追蹤議題</span>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- 設定議題表單 -->
+    <section class="topic-form">
+        <form action="/set_topic" method="POST">
+            <div class="form-row">
+                <input
+                    type="text"
+                    name="keyword"
+                    placeholder="輸入關鍵字，例如：人工智慧"
+                    required
+                >
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    onclick="return confirm('換題將清除現有報導，確定繼續？')"
+                >
+                    開始追蹤
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <!-- 手動更新 -->
+    {% if topic %}
+    <section class="refresh-section">
+        <button id="refreshBtn" class="btn btn-secondary" onclick="refreshNow()">
+            <span class="btn-icon">↻</span> 立即更新
+        </button>
+        <span id="refreshMsg" class="refresh-msg"></span>
+    </section>
+    {% endif %}
+
+</div>
+
+<!-- 報導列表 -->
+<section class="article-list">
+    <div class="list-header">
+        <h2>報導列表</h2>
+    </div>
+
+    {% if articles %}
+    <table>
+        <thead>
+            <tr>
+                <th class="col-date">刊登時間</th>
+                <th class="col-title">標題</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for article in articles %}
+            <tr>
+                <td class="col-date">
+                    <span class="date-text">{{ article['published_at'] }}</span>
+                </td>
+                <td class="col-title">
+                    <a href="{{ article['url'] }}" target="_blank">
+                        {{ article['title'] }}
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p class="empty-icon">📭</p>
+        <p>目前沒有報導，請先設定追蹤議題。</p>
+    </div>
+    {% endif %}
+</section>
+
+{% if topic %}
+<script>
+    function refreshNow() {
+        const btn = document.getElementById('refreshBtn');
+        const msg = document.getElementById('refreshMsg');
+        btn.disabled = true;
+        msg.textContent = '更新中...';
+        msg.className = 'refresh-msg loading';
+
+        fetch('/refresh', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    msg.textContent = `✓ 更新完成，新增 ${data.new_count} 筆報導`;
+                    msg.className = 'refresh-msg success';
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(() => {
+                msg.textContent = '✗ 更新失敗，請稍後再試';
+                msg.className = 'refresh-msg error';
+                btn.disabled = false;
+            });
+    }
+</script>
+{% endif %}
+
+{% endblock %}
