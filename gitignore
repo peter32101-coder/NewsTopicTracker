@@ -1,0 +1,26 @@
+# 資料庫（含本機資料，不上傳）
+*.db
+
+# 執行日誌
+cron.log
+
+# Python 快取
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 虛擬環境
+venv/
+env/
+.venv/
+
+# Mac 系統檔
+.DS_Store
+
+# 編輯器設定
+.vscode/
+.idea/
+
+# 環境變數檔（若未來有使用）
+.env

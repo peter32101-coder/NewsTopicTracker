@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from bs4 import BeautifulSoup
 from datetime import datetime
+from webdriver_manager.chrome import ChromeDriverManager
 
 CNA_SEARCH_URL = 'https://www.cna.com.tw/search/hysearchws.aspx?q={keyword}'
 
@@ -18,7 +19,8 @@ def get_driver(headless=True):
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
     options.add_argument('--window-size=1920,1080')
-    driver = webdriver.Chrome(service=Service('/Users/lit/Documents/project/news_tracker/src/chromedriver-mac-arm64/chromedriver'), options=options)
+    driver = webdriver.Chrome(
+    service=Service(ChromeDriverManager().install()),options=options)
     return driver
 
 # 解析CNA日期字串格式
