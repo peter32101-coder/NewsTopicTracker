@@ -5,6 +5,7 @@ certifi==2026.6.17
 charset-normalizer==3.4.7
 click==8.4.2
 Flask==3.1.3
+Flask-SQLAlchemy==3.1.1
 h11==0.16.0
 idna==3.18
 itsdangerous==2.2.0
@@ -19,6 +20,7 @@ selenium==4.45.0
 sniffio==1.3.1
 sortedcontainers==2.4.0
 soupsieve==2.8.4
+SQLAlchemy==2.0.51
 trio==0.33.0
 trio-websocket==0.12.2
 typing_extensions==4.16.0
