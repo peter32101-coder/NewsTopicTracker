@@ -1,14 +1,23 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
-from database import init_db, save_topic, get_current_topic, save_articles, get_articles, update_last_scraped
+from flask import Flask, render_template, redirect, url_for, jsonify, request
+from database import save_topic, get_current_topic, save_articles, get_articles, update_last_scraped
 from scraper import scrape_cna
+from database import db, Topic, Article
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///news_tracker.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+
+def init_db():
+    with app.app_context():
+        db.create_all()
+        print("資料庫初始化完成！")
 
 
 @app.route('/')
 def index():
     topic = get_current_topic()
-    articles = get_articles(topic["id"]) if topic else []
+    articles = get_articles(topic.id) if topic else []
     return render_template("index.html", topic=topic, articles=articles)
 
 @app.route("/set_topic", methods=["POST"])
@@ -26,9 +35,9 @@ def refresh():
     if not topic:
         return jsonify({"error": "目前沒有設定追蹤議題！"}), 400
 
-    articles = scrape_cna(topic["keyword"], headless=True)
-    new_count = save_articles(topic["id"], articles)
-    update_last_scraped(topic["id"])
+    articles = scrape_cna(topic.keyword, headless=True)
+    new_count = save_articles(topic.id, articles)
+    update_last_scraped(topic.id)
     return jsonify({"success": True, "new_count": new_count})
 
 if __name__ == '__main__':
