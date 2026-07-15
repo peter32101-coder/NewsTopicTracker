@@ -24,3 +24,6 @@ env/
 
 # 環境變數檔（若未來有使用）
 .env
+
+# ChromeDriver 執行檔
+chromedriver-mac-arm64/
