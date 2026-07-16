@@ -2,9 +2,15 @@ from flask import Flask, render_template, redirect, url_for, jsonify, request
 from database import save_topic, get_current_topic, save_articles, get_articles, update_last_scraped
 from scraper import scrape_cna
 from database import db, Topic, Article
+import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///news_tracker.db'
+
+DB_DIR = os.environ.get('DB_DIR', os.path.dirname(__file__))
+os.makedirs(DB_DIR, exist_ok=True)
+DB_PATH = os.path.join(DB_DIR, 'news_tracker.db')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
@@ -42,4 +48,4 @@ def refresh():
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=False)

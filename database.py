@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
+from sqlalchemy.exc import IntegrityError
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'news_tracker.db')
 
@@ -27,6 +28,7 @@ class Article(db.Model):
 
 #儲存新的主題關鍵字，並清除舊的主題和文章資料(目前每次只能追蹤一個主題)
 def save_topic(keyword):
+    Article.query.delete()
     Topic.query.delete()
     new_topic = Topic(keyword=keyword, created_at=datetime.now())
     db.session.add(new_topic)
@@ -39,13 +41,13 @@ def get_current_topic():
     return Topic.query.order_by(Topic.id.desc()).first()
 
 #儲存報導列表，並回傳新增筆數
-def save_articles(topic_id,articles):
+def save_articles(topic_id, articles):
     new_count = 0
     for v in articles:
         try:
             published_at = v['published_at']
             if isinstance(published_at, str):
-                published_at = datetime.strptime(v['published_at'], '%Y-%m-%d %H:%M:%S')
+                published_at = datetime.strptime(published_at, '%Y-%m-%d %H:%M:%S')
 
             article = Article(
                 topic_id=topic_id,
@@ -57,6 +59,9 @@ def save_articles(topic_id,articles):
             db.session.add(article)
             db.session.commit()
             new_count += 1
+        except IntegrityError:
+            db.session.rollback()
+            # 重複報導，正常略過，不視為錯誤
         except Exception as e:
             db.session.rollback()
             print(f"儲存報導失敗: {v['title']}，原因: {e}")

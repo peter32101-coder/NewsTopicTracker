@@ -7,8 +7,13 @@ from selenium.webdriver.chrome.service import Service
 from bs4 import BeautifulSoup
 from datetime import datetime
 from webdriver_manager.chrome import ChromeDriverManager
+import os
 
 CNA_SEARCH_URL = 'https://www.cna.com.tw/search/hysearchws.aspx?q={keyword}'
+
+# 容器內 Chromium 的預設安裝路徑（Debian/Ubuntu 環境）
+CHROMIUM_BINARY = '/usr/bin/chromium'
+CHROMIUM_DRIVER = '/usr/bin/chromedriver'
 
 # 取得 Selenium WebDriver
 def get_driver(headless=True):
@@ -19,8 +24,16 @@ def get_driver(headless=True):
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
     options.add_argument('--window-size=1920,1080')
-    driver = webdriver.Chrome(
-    service=Service(ChromeDriverManager().install()),options=options)
+
+    # 判斷是否在容器環境（有內建 Chromium）
+    if os.path.exists(CHROMIUM_BINARY) and os.path.exists(CHROMIUM_DRIVER):
+        options.binary_location = CHROMIUM_BINARY
+        service = Service(CHROMIUM_DRIVER)
+    else:
+        # 本機開發環境（Mac），沿用原本的 webdriver-manager 自動下載機制
+        service = Service(ChromeDriverManager().install())
+
+    driver = webdriver.Chrome(service=service, options=options)
     return driver
 
 # 解析CNA日期字串格式

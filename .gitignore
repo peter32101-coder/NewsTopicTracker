@@ -27,3 +27,6 @@ env/
 
 # ChromeDriver 執行檔
 chromedriver-mac-arm64/
+
+# Docker volume 掛載的資料目錄
+data/
